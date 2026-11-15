@@ -9,7 +9,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
     "http://192.168.1.11:8000",
-    "http://10.75.228.185:8000",  # ← remplacez par l'IP de votre PC
+    "http://10.75.228.185:8000",  # ← remplacez  par l'IP de votre PC
 ]
 INSTALLED_APPS = [
     "django.contrib.admin",
