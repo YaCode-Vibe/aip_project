@@ -1,0 +1,571 @@
+{% load static aip_tags %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ ad.icao_code }} – AIP AD 2</title>
+</head>
+<body>
+
+<!-- ===================================================== -->
+<!-- EN-TÊTE RUNNING (table 2 colonnes, alignement garanti) -->
+<!-- ===================================================== -->
+<div class="page-header">
+  <table>
+    <tr>
+      <td class="ph-left">AIP<br>ALGERIA</td>
+      <td class="ph-right">
+        AD 2. {{ ad.icao_code }} -<span style="page-num: counter(page)">1</span><br>
+        <span style="content: string(page-date, first)">{{ d_hours }}</span>
+      </td>
+    </tr>
+  </table>
+</div>
+
+{# ===================================================== AD 2.1 #}
+<div class="section-block{% if diff.ad_2_2|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_ad_2_2 }}"
+     data-page-amdt="{{ airac_ref }}">
+  <table class="aip">
+    <thead><tr><th class="section-heading">
+      {{ ad.icao_code }} AD 2.1 AERODROME LOCATION INDICATOR AND NAME
+    </th></tr></thead>
+    <tbody><tr><td class="center bold">{{ ad.icao_code }} - {{ ad.name }}</td></tr></tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.2 #}
+<div class="section-block{% if diff.ad_2_2|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_ad_2_2 }}"
+     data-page-amdt="{{ airac_ref }}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.2 AERODROME GEOGRAPHICAL AND ADMINISTRATIVE DATA
+    </th></tr></thead>
+    <tbody>
+      {% with s=diff.ad_2_2 %}
+      <tr{% if s|row_changed:0 %} class="change-bar"{% endif %}>
+        <td class="num">1</td>
+        <td class="label">ARP coordinates and site at AD</td>
+        <td class="value"> {{ arp_dms }}<br> {{ ad.arp_site|default:"NIL" }}
+        </td>
+      <tr{% if s|row_changed:1 %} class="change-bar"{% endif %}>
+        <td class="num">2</td><td class="label">Direction and distance from (city)</td>
+        <td class="value">{{ ad.distance_from_city|default:"NIL" }}</td>
+      </tr>
+      <tr{% if s|row_changed:2 %} class="change-bar"{% endif %}>
+        <td class="num">3</td><td class="label">Elevation/Reference Temperature</td>
+        <td class="value">{{ ad.elevation_m|default:"NIL" }} M / {{ ad.reference_temperature_c|default:"NIL" }}°C</td>
+      </tr>
+      <tr{% if s|row_changed:3 %} class="change-bar"{% endif %}>
+        <td class="num">4</td><td class="label">Geoid undulation at AD ELEV PSN</td>
+        <td class="value">{{ ad.geoid_undulation|default:"NIL" }}</td>
+      </tr>
+      <tr{% if s|row_changed:4 %} class="change-bar"{% endif %}>
+        <td class="num">5</td><td class="label">MAG VAR / Annual change</td>
+        <td class="value">{{ ad.magnetic_variation_deg|default:"NIL" }}° ({{ ad.magnetic_variation_year|default:"NIL" }}) / {{ ad.annual_change_deg|default:"NIL" }}°</td>
+      </tr>
+      <tr{% if s|row_changed:5 %} class="change-bar"{% endif %}>
+        <td class="num">6</td><td class="label">AD Administration, address, telephone, telefax, Telex, AFS</td>
+        <td class="value">{{ contacts_html|safe }}</td>
+      </tr>
+      <tr{% if s|row_changed:6 %} class="change-bar"{% endif %}>
+        <td class="num">7</td><td class="label">Type of traffic (IFR/VFR)</td>
+        <td class="value">{{ ad.get_traffic_type_display }}</td>
+      </tr>
+      <tr{% if s|row_changed:7 %} class="change-bar"{% endif %}>
+        <td class="num">8</td><td class="label">Remarks</td>
+        <td class="value">{{ ad.remarks|default:"NIL" }}</td>
+      </tr>
+      {% endwith %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.3 #}
+<div class="section-block{% if diff.hours|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_hours }}"
+     data-page-amdt="{% if diff.hours|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.3 OPERATIONAL HOURS
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_hours %}
+        <tr{% if diff.hours|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td>
+          <td class="label">{{ row.label }}</td>
+          <td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.4 #}
+<div class="section-block{% if diff.handling|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_handling }}"
+     data-page-amdt="{% if diff.handling|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.4 HANDLING SERVICES AND FACILITIES
+    </th></tr></thead>
+    <tbody>
+      {% with h=ad.handling s=diff.handling %}
+      <tr{% if s|row_changed:0 %} class="change-bar"{% endif %}><td class="num">1</td><td class="label">Cargo handling facilities</td><td class="value">{{ h.cargo_facilities|default:"NIL" }}</td></tr>
+      <tr{% if s|row_changed:1 %} class="change-bar"{% endif %}><td class="num">2</td><td class="label">Fuel and oil types</td><td class="value">{{ h.fuel_types|default:"NIL" }}</td></tr>
+      <tr{% if s|row_changed:2 %} class="change-bar"{% endif %}><td class="num">3</td><td class="label">Fuelling facilities and capacity</td><td class="value">{{ h.fueling_facilities|default:"NIL" }}</td></tr>
+      <tr{% if s|row_changed:3 %} class="change-bar"{% endif %}><td class="num">4</td><td class="label">De-icing facilities</td><td class="value">{{ h.deicing_facilities|default:"NIL" }}</td></tr>
+      <tr{% if s|row_changed:4 %} class="change-bar"{% endif %}><td class="num">5</td><td class="label">Hangar space for visiting aircraft</td><td class="value">{{ h.hangar_space|default:"NIL" }}</td></tr>
+      <tr{% if s|row_changed:5 %} class="change-bar"{% endif %}><td class="num">6</td><td class="label">Repair facilities for visiting aircraft</td><td class="value">{{ h.repair_facilities|default:"NIL" }}</td></tr>
+      <tr{% if s|row_changed:6 %} class="change-bar"{% endif %}><td class="num">7</td><td class="label">Remarks</td><td class="value">{{ h.remarks|default:"NIL" }}</td></tr>
+      {% endwith %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.5 #}
+<div class="section-block{% if diff.passenger|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_passenger }}"
+     data-page-amdt="{% if diff.passenger|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.5 PASSENGER FACILITIES
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_passenger %}
+        <tr{% if diff.passenger|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td>
+          <td class="label">{{ row.label }}</td>
+          <td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.6 #}
+<div class="section-block{% if diff.rffs|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_rffs }}"
+     data-page-amdt="{% if diff.rffs|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.6 RESCUE AND FIREFIGHTING SERVICES
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_rffs %}
+        <tr{% if diff.rffs|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td>
+          <td class="label">{{ row.label }}</td>
+          <td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.7 #}
+<div class="section-block{% if diff.seasonal|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_seasonal }}"
+     data-page-amdt="{% if diff.seasonal|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.7 SEASONAL AVAILABILITY - CLEARING
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_seasonal %}
+        <tr{% if diff.seasonal|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td>
+          <td class="label">{{ row.label }}</td>
+          <td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.8 #}
+<div class="section-block{% if diff.aprons|section_changed or diff.taxiways|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_hours }}"
+     data-page-amdt="{% if diff.aprons|section_changed or diff.taxiways|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.8 APRONS, TAXIWAYS AND CHECK LOCATIONS / POSITION DATA
+    </th></tr></thead>
+    <tbody>
+      <tr{% if diff.aprons|section_changed %} class="change-bar"{% endif %}>
+        <td class="num">1</td><td class="label">Apron surface and strength</td>
+        <td class="value">
+          {% for a in aprons %}<div><strong>{{ a.designator|default:"Apron" }}</strong> – Surface: {{ a.surface|default:"NIL" }}, Strength: {{ a.strength|default:"NIL" }}{% if a.dimensions %} ({{ a.dimensions }}){% endif %}</div>{% empty %}NIL{% endfor %}
+        </td>
+      </tr>
+      <tr{% if diff.taxiways|section_changed %} class="change-bar"{% endif %}>
+        <td class="num">2</td><td class="label">Taxiway width, surface and strength</td>
+        <td class="value">
+          {% for t in taxiways %}<div><strong>{{ t.designator }}</strong> – Width: {{ t.width_m|default:"NIL" }} M, Surface: {{ t.surface|default:"NIL" }}, Strength: {{ t.strength|default:"NIL" }}</div>{% empty %}NIL{% endfor %}
+        </td>
+      </tr>
+      <tr><td class="num">3</td><td class="label">Altimeter checkpoint location and elevation</td>
+        <td class="value">{% for ck in check_locations %}{% if ck.kind == "ALTIMETER" %}Location: {{ ck.location|default:"NIL" }} Elevation: {{ ck.elevation|default:"NIL" }}{% endif %}{% empty %}NIL{% endfor %}</td></tr>
+      <tr><td class="num">4</td><td class="label">VOR checkpoints</td>
+        <td class="value">{% for ck in check_locations %}{% if ck.kind == "VOR" %}{{ ck.location|default:"NIL" }}{% endif %}{% empty %}NIL{% endfor %}</td></tr>
+      <tr><td class="num">5</td><td class="label">INS checkpoints</td>
+        <td class="value">{% for ck in check_locations %}{% if ck.kind == "INS" %}{{ ck.location|default:"NIL" }}{% endif %}{% empty %}NIL{% endfor %}</td></tr>
+      <tr><td class="num">6</td><td class="label">Remarks</td><td class="value">NIL</td></tr>
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.9 #}
+<div class="section-block{% if diff.smgcs|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_smgcs }}"
+     data-page-amdt="{% if diff.smgcs|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.9 SURFACE MOVEMENT GUIDANCE AND CONTROL SYSTEM AND MARKINGS
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_smgcs %}
+        <tr{% if diff.smgcs|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td>
+          <td class="label">{{ row.label }}</td>
+          <td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+
+{# ============================================================ AD 2.10 #}
+<div class="section-block{% if diff.obstacles|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_obstacles }}"
+     data-page-amdt="{% if diff.obstacles|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip multi">
+    <thead>
+      <tr><th colspan="6" class="section-heading">
+        {{ ad.icao_code }} AD 2.10 AERODROME OBSTACLES
+      </th></tr>
+      <tr><th colspan="6" class="sub-header">Approach and take-off areas</th></tr>
+      <tr>
+        <th class="col-header">OBST ID / Designation</th>
+        <th class="col-header">OBST type</th>
+        <th class="col-header">OBST position</th>
+        <th class="col-header">ELEV/HGT</th>
+        <th class="col-header">Markings / Type, Color</th>
+        <th class="col-header">Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {# ---- Approach and take-off areas ---- #}
+      {% for o in obstacles_approach %}
+        <tr{% if diff.obstacles|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td>{{ o.obst_id|default:"NIL" }}</td>
+          <td>{{ o.obstacle_type|default:"NIL" }}</td>
+          <td>
+            {% if o.coordinates_dms != "NIL" %}{{ o.coordinates_dms }}
+            {% else %}{{ o.position_text|default:"NIL" }}{% endif %}
+          </td>
+          <td>
+            {% if o.elevation_m and o.height_m %}{{ o.elevation_m }}/{{ o.height_m }} M
+            {% elif o.elevation_m %}{{ o.elevation_m }} M
+            {% elif o.height_m %}HGT {{ o.height_m }} M
+            {% else %}NIL{% endif %}
+          </td>
+          <td>{{ o.markings|default:"NIL" }}</td>
+          <td>{{ o.remarks|default:"NIL" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="center">NIL</td></tr>
+      {% endfor %}
+
+      {# ---- Circling area and at aerodrome ---- #}
+      <tr><th colspan="6" class="sub-header">Circling area and at aerodrome</th></tr>
+      <tr>
+        <th class="col-header">OBST ID / Designation</th>
+        <th class="col-header">OBST type</th>
+        <th class="col-header">OBST position</th>
+        <th class="col-header">ELEV/HGT</th>
+        <th class="col-header">Markings / Type, Color</th>
+        <th class="col-header">Remarks</th>
+      </tr>
+      {% for o in obstacles_circling %}
+        <tr{% if diff.obstacles|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td>{{ o.obst_id|default:"NIL" }}</td>
+          <td>{{ o.obstacle_type|default:"NIL" }}</td>
+          <td>
+            {% if o.coordinates_dms != "NIL" %}{{ o.coordinates_dms }}
+            {% else %}{{ o.position_text|default:"NIL" }}{% endif %}
+          </td>
+          <td>
+            {% if o.elevation_m and o.height_m %}{{ o.elevation_m }}/{{ o.height_m }} M
+            {% elif o.elevation_m %}{{ o.elevation_m }} M
+            {% elif o.height_m %}HGT {{ o.height_m }} M
+            {% else %}NIL{% endif %}
+          </td>
+          <td>{{ o.markings|default:"NIL" }}</td>
+          <td>{{ o.remarks|default:"NIL" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="center">NIL</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.11 #}
+<div class="section-block{% if diff.met|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_met }}"
+     data-page-amdt="{% if diff.met|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.11 METEOROLOGICAL INFORMATION PROVIDED
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_met %}
+        <tr{% if diff.met|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td>
+          <td class="label">{{ row.label }}</td>
+          <td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.12 #}
+<div class="section-block{% if diff.runways|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_runways }}"
+     data-page-amdt="{% if diff.runways|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip multi">
+    <thead><tr><th colspan="7" class="section-heading">{{ ad.icao_code }} AD 2.12 RUNWAY PHYSICAL CHARACTERISTICS</th></tr>
+      <tr>
+        <th class="col-header">RWY NR</th><th class="col-header">TRUE BRG</th><th class="col-header">Dimensions (M)</th>
+        <th class="col-header">Strength (PCR) / Surface</th><th class="col-header">THR coords / elevation</th>
+        <th class="col-header">RWY end coords</th><th class="col-header">THR geoid</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in runways %}
+        {% with r=item.runway %}
+        <tr{% if diff.runways|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="center bold">{{ r.designator }}</td>
+          <td class="center">{{ r.true_bearing|default:"NIL" }}°</td>
+          <td class="center">{% if r.length_m and r.width_m %}{{ r.length_m }} x {{ r.width_m }}{% else %}NIL{% endif %}</td>
+          <td>{{ item.thr_dms }}<br>
+    {{ r.thr_elevation_m|default:"NIL" }} M</td>
+<td>{{ item.end_dms }}<br>
+    {{ r.end_elevation_m|default:"NIL" }} M</td>
+          <td>{{ r.end_latitude|default:"NIL" }} {{ r.end_longitude|default:"" }}<br>{{ r.end_elevation_m|default:"NIL" }} M</td>
+          <td class="center">{{ r.thr_geoid_undulation|default:"NIL" }}</td>
+        </tr>
+        {% endwith %}
+      {% empty %}<tr><td colspan="7" class="center">NIL</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.13 #}
+<div class="section-block{% if diff.runways|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_runways }}"
+     data-page-amdt="{% if diff.runways|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip multi">
+    <thead><tr><th colspan="6" class="section-heading">{{ ad.icao_code }} AD 2.13 DECLARED DISTANCES</th></tr>
+      <tr>
+        <th class="col-header">RWY Designator</th><th class="col-header">TORA (m)</th><th class="col-header">TODA (m)</th>
+        <th class="col-header">ASDA (m)</th><th class="col-header">LDA (m)</th><th class="col-header">Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in runways %}
+        <tr{% if diff.runways|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="center bold">{{ item.runway.designator }}</td>
+          <td class="center">{{ item.dd.tora|default:"NIL" }}</td>
+          <td class="center">{{ item.dd.toda|default:"NIL" }}</td>
+          <td class="center">{{ item.dd.asda|default:"NIL" }}</td>
+          <td class="center">{{ item.dd.lda|default:"NIL" }}</td>
+          <td>{{ item.dd.remarks|default:"NIL" }}</td>
+        </tr>
+      {% empty %}<tr><td colspan="6" class="center">NIL</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.14 #}
+<div class="section-block{% if diff.runways|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_lighting }}"
+     data-page-amdt="{% if diff.runways|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip multi">
+    <thead><tr><th colspan="10" class="section-heading">{{ ad.icao_code }} AD 2.14 APPROACH AND RUNWAY LIGHTING</th></tr>
+      <tr>
+        <th class="col-header">RWY</th><th class="col-header">APCH LGT</th><th class="col-header">THR LGT</th>
+        <th class="col-header">VASIS/PAPI</th><th class="col-header">TDZ LGT</th><th class="col-header">RCL LGT</th>
+        <th class="col-header">Edge LGT</th><th class="col-header">End LGT</th><th class="col-header">SWY LGT</th><th class="col-header">Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in runways %}
+        {% with lt=item.lighting %}
+        <tr{% if diff.runways|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="center bold">{{ item.runway.designator }}</td>
+          <td>{{ lt.apch_lgt_type|default:"NIL" }} {{ lt.apch_lgt_length|default:"" }}</td>
+          <td>{{ lt.thr_lgt_color|default:"NIL" }}</td>
+          <td>{{ lt.vasis_type|default:"NIL" }} {{ lt.papi_angle|default:"" }}</td>
+          <td>{{ lt.tdz_lgt_length|default:"NIL" }}</td>
+          <td>{{ lt.rcl_lgt|default:"NIL" }}</td>
+          <td>{{ lt.rwy_edge_lgt|default:"NIL" }}</td>
+          <td>{{ lt.rwy_end_lgt|default:"NIL" }}</td>
+          <td>{{ lt.swy_lgt|default:"NIL" }}</td>
+          <td>{{ lt.remarks|default:"NIL" }}</td>
+        </tr>
+        {% endwith %}
+      {% empty %}<tr><td colspan="10" class="center">NIL</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.15 #}
+<div class="section-block{% if diff.other_lighting|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_other_lighting }}"
+     data-page-amdt="{% if diff.other_lighting|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.15 OTHER LIGHTING AND SECONDARY POWER SUPPLY
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_other_lighting %}
+        <tr{% if diff.other_lighting|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td><td class="label">{{ row.label }}</td><td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.16 #}
+<div class="section-block{% if diff.helipad|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_helipad }}"
+     data-page-amdt="{% if diff.helipad|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.16 HELICOPTER LANDING AREA
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_helipad %}
+        <tr{% if diff.helipad|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td><td class="label">{{ row.label }}</td><td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.17 #}
+<div class="section-block{% if diff.airspace|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_airspace }}"
+     data-page-amdt="{% if diff.airspace|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip">
+    <thead><tr><th colspan="3" class="section-heading">
+      {{ ad.icao_code }} AD 2.17 ATS AIRSPACE
+    </th></tr></thead>
+    <tbody>
+      {% for row in rows_airspace %}
+        <tr{% if diff.airspace|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td class="num">{{ row.num }}</td><td class="label">{{ row.label }}</td><td class="value">{{ row.value|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.18 #}
+<div class="section-block{% if diff.comms|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_comms }}"
+     data-page-amdt="{% if diff.comms|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip multi">
+    <thead><tr><th colspan="5" class="section-heading">{{ ad.icao_code }} AD 2.18 ATS COMMUNICATION FACILITIES</th></tr>
+      <tr>
+        <th class="col-header">Service</th><th class="col-header">Call sign</th>
+        <th class="col-header">Channel</th><th class="col-header">Hours</th><th class="col-header">Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in comms %}
+        <tr{% if diff.comms|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td>{{ c.get_service_display }}</td><td>{{ c.call_sign|default:"NIL" }}</td>
+          <td>{{ c.frequency|default:"NIL" }}</td><td>{{ c.hours_of_operation|default:"NIL" }}</td>
+          <td>{{ c.remarks|default:"NIL" }}</td>
+        </tr>
+      {% empty %}<tr><td colspan="5" class="center">NIL</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.19 #}
+<div class="section-block{% if diff.navaids|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_navaids }}"
+     data-page-amdt="{% if diff.navaids|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip multi">
+    <thead><tr><th colspan="7" class="section-heading">{{ ad.icao_code }} AD 2.19 RADIO NAVIGATION AND LANDING AIDS</th></tr>
+      <tr>
+        <th class="col-header">Type</th><th class="col-header">ID</th><th class="col-header">Frequency</th>
+        <th class="col-header">Hours</th><th class="col-header">Position</th><th class="col-header">DME elev.</th><th class="col-header">Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in navaids %}
+      <tr>
+          <td>{{ n.obj.get_aid_type_display }}</td>
+          <td class="center">{{ n.obj.designator|default:"NIL" }}</td>
+          <td>{{ n.obj.frequency|default:"NIL" }}</td>
+          <td>{{ n.obj.hours_of_operation|default:"NIL" }}</td>
+          <td>{{ n.coords_dms }}</td>
+          <td>{{ n.obj.elevation_m|default:"NIL" }}</td>
+          <td>{{ n.obj.remarks|default:"NIL" }}</td>
+        </tr>
+
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ===================================================== AD 2.20–2.23 #}
+<div class="section-block{% if diff.texts|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_texts }}"
+     data-page-amdt="{% if diff.texts|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <div{% if diff.texts|key_changed:"2.20" %} class="change-bar"{% endif %}>
+    <p class="text-header">{{ ad.icao_code }} AD 2.20 LOCAL AERODROME REGULATIONS:</p>
+    <p class="text-body">{{ text_2_20|linebreaksbr }}</p>
+  </div>
+  <div{% if diff.texts|key_changed:"2.21" %} class="change-bar"{% endif %}>
+    <p class="text-header">{{ ad.icao_code }} AD 2.21 NOISE ABATEMENT PROCEDURES:</p>
+    <p class="text-body">{{ text_2_21|linebreaksbr }}</p>
+  </div>
+  <div{% if diff.texts|key_changed:"2.22" %} class="change-bar"{% endif %}>
+    <p class="text-header">{{ ad.icao_code }} AD 2.22 FLIGHT PROCEDURES:</p>
+    <p class="text-body">{{ text_2_22|linebreaksbr }}</p>
+  </div>
+  <div{% if diff.texts|key_changed:"2.23" %} class="change-bar"{% endif %}>
+    <p class="text-header">{{ ad.icao_code }} AD 2.23 ADDITIONAL INFORMATION:</p>
+    <p class="text-body">{{ text_2_23|linebreaksbr }}</p>
+  </div>
+</div>
+
+{# ===================================================== AD 2.24 #}
+<div class="section-block{% if diff.charts|section_changed %} changed{% endif %}"
+     data-page-date="{{ d_charts }}"
+     data-page-amdt="{% if diff.charts|section_changed %}{{ airac_ref }}{% else %}{{ prev_airac_ref }}{% endif %}">
+  <table class="aip multi">
+    <thead><tr><th colspan="2" class="section-heading">{{ ad.icao_code }} AD 2.24 CHARTS RELATED TO AN AERODROME</th></tr></thead>
+    <tbody>
+      {% for c in charts %}
+        <tr{% if diff.charts|row_changed:forloop.counter0 %} class="change-bar"{% endif %}>
+          <td>{{ c.title|default:"NIL" }}</td><td>{{ c.reference|default:"NIL" }}</td>
+        </tr>
+      {% empty %}<tr><td colspan="2" class="center">NIL</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

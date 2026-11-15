@@ -1,0 +1,1 @@
+from .aip_algeria import AERODROMES  # noqa

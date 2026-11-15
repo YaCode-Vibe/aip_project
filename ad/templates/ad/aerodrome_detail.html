@@ -1,0 +1,870 @@
+{% extends "ad/base.html" %}
+{% block title %}{{ ad.icao_code }} – {{ ad.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="h3 mb-1">
+      <span class="badge bg-primary align-middle">{{ ad.icao_code }}</span>
+      {{ ad.name }}
+    </h1>
+    <p class="text-muted mb-0">
+      <i class="bi bi-geo-alt me-1"></i>{{ ad.city }} ·
+      ARP {{ ad.coordinates_dms }} · ELEV {{ ad.elevation_m|default:"—" }} M
+    </p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+
+    <a class="btn btn-outline-danger"
+       href="{% url 'ad:aerodrome_pdf' ad.icao_code %}"
+       target="_blank"
+       title="Aperçu PDF au format AIP officiel">
+      <i class="bi bi-file-earmark-pdf me-1"></i>PDF AIP
+    </a>
+
+    <a class="btn btn-outline-success"
+     href="{% url 'ad:aerodrome_odt' ad.icao_code %}"
+     title="Télécharger en ODT modifiable">
+    <i class="bi bi-file-earmark-word me-1"></i>ODT (modifiable)
+    </a>
+
+    <a class="btn btn-outline-info"
+       href="{% url 'ad:aerodrome_export' ad.icao_code %}">
+      <i class="bi bi-download me-1"></i>Exporter JSON
+    </a>
+    <a class="btn btn-outline-primary"
+       href="{% url 'ad:aerodrome_update' ad.icao_code %}">
+      <i class="bi bi-pencil-square me-1"></i>Edit AD 2.1/2.2
+    </a>
+    <a class="btn btn-outline-danger"
+       href="{% url 'ad:aerodrome_delete' ad.icao_code %}">
+      <i class="bi bi-trash me-1"></i>Delete
+    </a>
+
+  </div>
+</div>
+
+<!-- Barre de complétude -->
+{% with cov=ad.coverage_report %}
+<div class="card shadow-sm border-0 mb-3">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between small mb-1">
+      <span class="fw-semibold">
+        <i class="bi bi-bar-chart-fill me-1 text-primary"></i>
+        Complétude de la fiche AIP
+      </span>
+      <span class="text-muted">
+        {{ cov.filled }} / {{ cov.total }} sections renseignées
+        <strong class="ms-1 text-primary">{{ cov.pct }}%</strong>
+      </span>
+    </div>
+    <div class="progress" style="height:8px">
+      <div class="progress-bar bg-primary" role="progressbar"
+           style="width: {{ cov.pct }}%"
+           aria-valuenow="{{ cov.pct }}" aria-valuemin="0" aria-valuemax="100">
+      </div>
+    </div>
+  </div>
+</div>
+{% endwith %}
+
+<!-- AD 2.2 card -->
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header aip-card-header">
+    AD 2.2 – Aerodrome geographical and administrative data
+  </div>
+  <div class="card-body">
+    <div class="row g-3 small">
+      <div class="col-md-4">
+        <strong>ARP / site:</strong> {{ ad.coordinates_dms }}<br>{{ ad.arp_site }}
+      </div>
+      <div class="col-md-4">
+        <strong>Direction & distance from city:</strong><br>
+        {{ ad.distance_from_city|default:"NIL" }}
+      </div>
+      <div class="col-md-4">
+        <strong>Elevation / Ref. temp:</strong>
+        {{ ad.elevation_m|default:"—" }} M /
+        {{ ad.reference_temperature_c|default:"—" }} °C
+      </div>
+      <div class="col-md-4">
+        <strong>Geoid undulation:</strong> {{ ad.geoid_undulation }}
+      </div>
+      <div class="col-md-4">
+        <strong>MAG VAR / annual change:</strong>
+        {{ ad.magnetic_variation_deg|default:"—" }}°
+        ({{ ad.magnetic_variation_year|default:"—" }}) /
+        {{ ad.annual_change_deg|default:"—" }}°
+      </div>
+      <div class="col-md-4">
+        <strong>Type of traffic:</strong> {{ ad.get_traffic_type_display }}
+      </div>
+      <div class="col-md-12">
+        <strong>Remarks:</strong> {{ ad.remarks|default:"NIL"|linebreaksbr }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-pills aip-tabs mb-3" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab"
+      data-bs-target="#t-hdr">AD 2.3–2.7</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab"
+      data-bs-target="#t-mov">AD 2.8–2.10</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab"
+      data-bs-target="#t-met">AD 2.11</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab"
+      data-bs-target="#t-rwy">AD 2.12–2.16</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab"
+      data-bs-target="#t-ats">AD 2.17–2.19</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab"
+      data-bs-target="#t-txt">AD 2.20–2.24</button></li>
+</ul>
+
+<div class="tab-content">
+
+<!-- ============ AD 2.3 – 2.7 ============ -->
+<div class="tab-pane fade show active" id="t-hdr">
+
+  <!-- AD 2.3 -->
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.3 – Operational hours</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'hours' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr><th>Service</th><th>Hours</th><th>H24</th><th>Remarks</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for h in ad.operational_hours.all %}
+        <tr>
+          <td>{{ h.get_service_display }}</td>
+          <td>{{ h.hours_text|default:"NIL" }}</td>
+          <td>{% if h.is_h24 %}<span class="badge bg-success">H24</span>{% endif %}</td>
+          <td class="small text-muted">{{ h.remarks }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{% url 'ad:child_update' ad.icao_code 'hours' h.pk %}">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a class="btn btn-sm btn-outline-danger"
+               href="{% url 'ad:child_delete' ad.icao_code 'hours' h.pk %}">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-muted text-center py-3">NIL</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- AD 2.4 / 2.6 / 2.7 singletons -->
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header aip-card-header d-flex justify-content-between">
+          <span>AD 2.4 – Handling</span>
+          <a class="btn btn-sm btn-light"
+             href="{% url 'ad:section_update' ad.icao_code 'handling' %}">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+        <div class="card-body small">
+          <p><strong>Fuel:</strong> {{ ad.handling.fuel_types|default:"NIL" }}</p>
+          <p><strong>Fuelling:</strong> {{ ad.handling.fueling_facilities|default:"NIL" }}</p>
+          <p class="mb-0"><strong>Cargo:</strong> {{ ad.handling.cargo_facilities|default:"NIL" }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header aip-card-header d-flex justify-content-between">
+          <span>AD 2.6 – RFFS</span>
+          <a class="btn btn-sm btn-light"
+             href="{% url 'ad:section_update' ad.icao_code 'rffs' %}">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+        <div class="card-body small">
+          <p><strong>Category:</strong>
+            <span class="badge bg-primary">{{ ad.rffs.category|default:"—" }}</span>
+          </p>
+          <p class="mb-0">{{ ad.rffs.rescue_equipment|default:"NIL" }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header aip-card-header d-flex justify-content-between">
+          <span>AD 2.7 – Seasonal availability</span>
+          <a class="btn btn-sm btn-light"
+             href="{% url 'ad:section_update' ad.icao_code 'seasonal' %}">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+        <div class="card-body small">
+          <p class="mb-0">{{ ad.seasonal_availability.clearing_equipment|default:"NIL" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOUVEAU : AD 1.1 et AD 1.5 -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header aip-card-header d-flex justify-content-between">
+          <span>AD 1.1 – Availability &amp; conditions of use</span>
+          <a class="btn btn-sm btn-light"
+             href="{% url 'ad:section_update' ad.icao_code 'condition-of-use' %}">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+        <div class="card-body small">
+          <p><strong>Availability:</strong>
+             {{ ad.condition_of_use.availability|default:"NIL" }}</p>
+          <p class="mb-0"><strong>Conditions:</strong>
+             {{ ad.condition_of_use.conditions_of_use|default:"NIL" }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header aip-card-header d-flex justify-content-between">
+          <span>AD 1.5 – Certification status</span>
+          <a class="btn btn-sm btn-light"
+             href="{% url 'ad:section_update' ad.icao_code 'certificate' %}">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+        <div class="card-body small">
+          <p><strong>Status:</strong>
+            <span class="badge bg-primary">
+              {{ ad.certificate.get_status_display|default:"NIL" }}
+            </span>
+          </p>
+          <p class="mb-0"><strong>Certificate n°:</strong>
+            {{ ad.certificate.certificate_number|default:"NIL" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AD 2.5 -->
+  <div class="card shadow-sm border-0 mt-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.5 – Passenger facilities</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'passenger' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <ul class="list-group list-group-flush small">
+      {% for p in ad.passenger_facilities.all %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span><strong>{{ p.get_kind_display }}:</strong> {{ p.description }}</span>
+          <a class="text-danger"
+             href="{% url 'ad:child_delete' ad.icao_code 'passenger' p.pk %}">
+            <i class="bi bi-trash"></i>
+          </a>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">NIL</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<!-- ============ AD 2.8 – 2.10 ============ -->
+<div class="tab-pane fade" id="t-mov">
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.8 – Aprons</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'aprons' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Designator</th><th>Surface</th><th>Strength</th><th>Dimensions</th><th></th></tr></thead>
+      <tbody>
+      {% for a in ad.aprons.all %}
+        <tr>
+          <td>{{ a.designator }}</td>
+          <td>{{ a.surface }}</td>
+          <td>{{ a.strength }}</td>
+          <td>{{ a.dimensions }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-danger"
+               href="{% url 'ad:child_delete' ad.icao_code 'aprons' a.pk %}">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-3">NIL</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.8 – Taxiways</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'taxiways' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <table class="table table-sm mb-0">
+      <thead><tr><th>TWY</th><th>Width (m)</th><th>Surface</th><th>Strength</th><th></th></tr></thead>
+      <tbody>
+      {% for t in ad.taxiways.all %}
+        <tr>
+          <td>{{ t.designator }}</td>
+          <td>{{ t.width_m }}</td>
+          <td>{{ t.surface }}</td>
+          <td>{{ t.strength }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-danger"
+               href="{% url 'ad:child_delete' ad.icao_code 'taxiways' t.pk %}">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-3">NIL</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.9 – SMGCS &amp; markings</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:section_update' ad.icao_code 'smgcs' %}">
+        <i class="bi bi-pencil"></i>
+      </a>
+    </div>
+    <div class="card-body small">
+      <p><strong>Stop bars:</strong> {{ ad.smgcs.stop_bars|default:"NIL" }}</p>
+      <p class="mb-0"><strong>Remarks:</strong> {{ ad.smgcs.remarks|default:"NIL" }}</p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.10 – Aerodrome obstacles</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'obstacles' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead>
+          <tr><th>ID</th><th>Area</th><th>Type</th><th>Position</th>
+              <th>ELEV/HGT (m)</th><th>Marking</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for o in ad.obstacles.all %}
+          <tr>
+            <td>{{ o.obst_id }}</td>
+            <td>{{ o.get_area_display }}</td>
+            <td>{{ o.obstacle_type }}</td>
+            <td class="small">
+  {% if o.coordinates_dms != "NIL" %}{{ o.coordinates_dms }}
+  {% else %}{{ o.position_text|default:"NIL" }}{% endif %}
+</td>
+            <td>{{ o.elevation_m|default:"—" }} / {{ o.height_m|default:"—" }}</td>
+            <td>{{ o.markings }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-danger"
+                 href="{% url 'ad:child_delete' ad.icao_code 'obstacles' o.pk %}">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-3">NIL</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AD 2.11 ============ -->
+<div class="tab-pane fade" id="t-met">
+  <div class="card shadow-sm border-0">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.11 – Meteorological information provided</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:section_update' ad.icao_code 'met' %}">
+        <i class="bi bi-pencil"></i> Edit
+      </a>
+    </div>
+    <div class="card-body small row g-3">
+      <div class="col-md-6"><strong>MET office:</strong>
+        {{ ad.met_service.associated_met_office|default:"NIL" }}</div>
+      <div class="col-md-6"><strong>Hours:</strong>
+        {{ ad.met_service.hours_of_service|default:"NIL" }}</div>
+      <div class="col-md-6"><strong>TAF office:</strong>
+        {{ ad.met_service.taf_office|default:"NIL" }}</div>
+      <div class="col-md-6"><strong>Validity:</strong>
+        {{ ad.met_service.validity_periods|default:"NIL" }}</div>
+      <div class="col-md-6"><strong>Trend forecast:</strong>
+        {{ ad.met_service.trend_forecast|default:"NIL" }}</div>
+      <div class="col-md-6"><strong>ATS units:</strong>
+        {{ ad.met_service.ats_units_provided|default:"NIL" }}</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ AD 2.12 – 2.16 ============ -->
+<div class="tab-pane fade" id="t-rwy">
+
+  {# ============================================================ #}
+  {# AD 2.12 – RUNWAY PHYSICAL CHARACTERISTICS                    #}
+  {# ============================================================ #}
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.12 – Runway physical characteristics</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'runways' %}">
+        <i class="bi bi-plus-lg me-1"></i>Add runway
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle mb-0 aip-table">
+        <thead>
+          <tr>
+            <th>RWY</th>
+            <th>BRG (°)</th>
+            <th>DIM (m)</th>
+            <th>PCR / Surface</th>
+            <th>THR coords / elev.</th>
+            <th>RWY end coords / elev.</th>
+            <th>THR geoid</th>
+            <th>TDZ elev.</th>
+            <th>Slope</th>
+            <th>SWY</th>
+            <th>CWY</th>
+            <th>Strip</th>
+            <th>RESA</th>
+            <th>OFZ</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in ad.runways.all %}
+          <tr>
+            <td class="fw-semibold text-center">{{ r.designator }}</td>
+            <td class="text-center">{{ r.true_bearing|default:"—" }}</td>
+            <td class="text-center">
+              {% if r.length_m and r.width_m %}{{ r.length_m }} × {{ r.width_m }}{% else %}—{% endif %}
+            </td>
+            <td class="small">
+              {{ r.strength|default:"—" }}<br>
+              <span class="text-muted">{{ r.surface|default:"" }}</span>
+            </td>
+            <td class="small">
+              {{ r.thr_coordinates_dms }}<br>
+              <span class="text-muted">{{ r.thr_elevation_m|default:"—" }} M</span>
+            </td>
+            <td class="small">
+              {{ r.end_coordinates_dms }}<br>
+              <span class="text-muted">{{ r.end_elevation_m|default:"—" }} M</span>
+            </td>
+            <td class="text-center small">{{ r.thr_geoid_undulation|default:"NIL" }}</td>
+            <td class="text-center small">{{ r.tdz_elevation_m|default:"—" }}</td>
+            <td class="text-center small">{{ r.slope|default:"NIL" }}</td>
+            <td class="text-center small">{{ r.swy_dimensions|default:"NIL" }}</td>
+            <td class="text-center small">{{ r.cwy_dimensions|default:"NIL" }}</td>
+            <td class="text-center small">{{ r.strip_dimensions|default:"NIL" }}</td>
+            <td class="text-center small">{{ r.resa|default:"NIL" }}</td>
+            <td class="text-center small">{{ r.ofz|default:"NIL" }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary"
+                 href="{% url 'ad:child_update' ad.icao_code 'runways' r.pk %}"
+                 title="Modifier AD 2.12">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a class="btn btn-sm btn-outline-danger"
+                 href="{% url 'ad:child_delete' ad.icao_code 'runways' r.pk %}"
+                 title="Supprimer">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="15" class="text-center text-muted py-4">
+            Aucune piste enregistrée. Cliquez sur « Add runway ».
+          </td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ============================================================ #}
+  {# AD 2.13 – DECLARED DISTANCES                                 #}
+  {# ============================================================ #}
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header">
+      <span>AD 2.13 – Declared distances</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle mb-0 aip-table">
+        <thead>
+          <tr>
+            <th>RWY</th>
+            <th>TORA (m)</th>
+            <th>TODA (m)</th>
+            <th>ASDA (m)</th>
+            <th>LDA (m)</th>
+            <th>Remarks</th>
+            <th class="text-end" style="width:90px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in ad.runways.all %}
+          <tr>
+            <td class="fw-semibold text-center">{{ r.designator }}</td>
+            <td class="text-center">{{ r.declared_distance.tora|default:"—" }}</td>
+            <td class="text-center">{{ r.declared_distance.toda|default:"—" }}</td>
+            <td class="text-center">{{ r.declared_distance.asda|default:"—" }}</td>
+            <td class="text-center">{{ r.declared_distance.lda|default:"—" }}</td>
+            <td class="small text-muted">{{ r.declared_distance.remarks|default:"NIL" }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary"
+                 href="{% url 'ad:runway_dd_update' ad.icao_code r.designator %}"
+                 title="Éditer TORA / TODA / ASDA / LDA">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">
+            Aucune piste enregistrée.
+          </td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ============================================================ #}
+  {# AD 2.14 – APPROACH AND RUNWAY LIGHTING                       #}
+  {# ============================================================ #}
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header">
+      <span>AD 2.14 – Approach and runway lighting</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle mb-0 aip-table">
+        <thead>
+          <tr>
+            <th>RWY</th>
+            <th>APCH LGT<br><small class="fw-normal">Type / Length / INTST</small></th>
+            <th>THR LGT<br><small class="fw-normal">Color / WBAR</small></th>
+            <th>VASIS / PAPI<br><small class="fw-normal">(MEHT)</small></th>
+            <th>TDZ LGT</th>
+            <th>RWY Center Line LGT</th>
+            <th>RWY Edge LGT<br><small class="fw-normal">LEN / spacing / color / INTST</small></th>
+            <th>RWY End LGT</th>
+            <th>SWY LGT</th>
+            <th>Remarks</th>
+            <th class="text-end" style="width:70px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in ad.runways.all %}
+          <tr>
+            <td class="fw-semibold text-center">{{ r.designator }}</td>
+
+            {# APCH LGT #}
+            <td class="small">
+              {% if r.lighting.apch_lgt_type or r.lighting.apch_lgt_length %}
+                <strong>{{ r.lighting.apch_lgt_type|default:"" }}</strong>
+                {% if r.lighting.apch_lgt_length %} {{ r.lighting.apch_lgt_length }}{% endif %}
+                {% if r.lighting.apch_lgt_intensity %}<br><span class="text-muted">{{ r.lighting.apch_lgt_intensity }}</span>{% endif %}
+              {% else %}NIL{% endif %}
+            </td>
+
+            {# THR LGT #}
+            <td class="small">
+              {{ r.lighting.thr_lgt_color|default:"NIL" }}
+              {% if r.lighting.wbar %}<br><span class="text-muted">WBAR</span>{% endif %}
+            </td>
+
+            {# VASIS / PAPI #}
+            <td class="small">
+              {% if r.lighting.vasis_type %}
+                {{ r.lighting.vasis_type }}
+                {% if r.lighting.vasis_meht %}<br><span class="text-muted">{{ r.lighting.vasis_meht }}</span>{% endif %}
+              {% elif r.lighting.papi_angle %}
+                PAPI {{ r.lighting.papi_angle }}
+              {% else %}NIL{% endif %}
+            </td>
+
+            <td class="text-center small">{{ r.lighting.tdz_lgt_length|default:"NIL" }}</td>
+            <td class="text-center small">{{ r.lighting.rcl_lgt|default:"NIL" }}</td>
+            <td class="small">{{ r.lighting.rwy_edge_lgt|default:"NIL" }}</td>
+            <td class="small">{{ r.lighting.rwy_end_lgt|default:"NIL" }}</td>
+            <td class="small">{{ r.lighting.swy_lgt|default:"NIL" }}</td>
+            <td class="small text-muted">{{ r.lighting.remarks|default:"NIL" }}</td>
+
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-warning"
+                 href="{% url 'ad:runway_lighting_update' ad.icao_code r.designator %}"
+                 title="Éditer le balisage (AD 2.14)">
+                <i class="bi bi-lightbulb"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="11" class="text-center text-muted py-4">
+            Aucune piste enregistrée.
+          </td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ============================================================ #}
+  {# AD 2.15 – OTHER LIGHTING & SECONDARY POWER SUPPLY            #}
+  {# ============================================================ #}
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header aip-card-header d-flex justify-content-between">
+          <span>AD 2.15 – Other lighting &amp; secondary power</span>
+          <a class="btn btn-sm btn-light"
+             href="{% url 'ad:section_update' ad.icao_code 'other-lighting' %}">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+        <div class="card-body small">
+          <p><strong>ABN / IBN :</strong> {{ ad.other_lighting.abn_location|default:"NIL" }}
+            {% if ad.other_lighting.abn_characteristics %}
+              <br><span class="text-muted">{{ ad.other_lighting.abn_characteristics }}</span>
+            {% endif %}
+            {% if ad.other_lighting.abn_hours %}
+              <br><span class="text-muted">{{ ad.other_lighting.abn_hours }}</span>
+            {% endif %}
+          </p>
+          <p><strong>LDI :</strong> {{ ad.other_lighting.ldi|default:"NIL" }}</p>
+          <p><strong>Anemometer :</strong> {{ ad.other_lighting.anemometer|default:"NIL" }}</p>
+          <p><strong>TWY edge lights :</strong> {{ ad.other_lighting.twy_edge_lights|default:"NIL" }}</p>
+          <p><strong>TWY centre line lights :</strong> {{ ad.other_lighting.twy_centre_line_lights|default:"NIL" }}</p>
+          <p><strong>Secondary power :</strong> {{ ad.other_lighting.secondary_power|default:"NIL" }}</p>
+          <p><strong>Switch-over :</strong> {{ ad.other_lighting.switch_over_time|default:"NIL" }}</p>
+          <p class="mb-0"><strong>Remarks :</strong> {{ ad.other_lighting.remarks|default:"NIL" }}</p>
+        </div>
+      </div>
+    </div>
+
+    {# ============================================================ #}
+    {# AD 2.16 – HELICOPTER LANDING AREA                            #}
+    {# ============================================================ #}
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header aip-card-header d-flex justify-content-between">
+          <span>AD 2.16 – Helicopter landing area</span>
+          <a class="btn btn-sm btn-light"
+             href="{% url 'ad:section_update' ad.icao_code 'helipad' %}">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+        <div class="card-body small">
+          <p><strong>TLOF / FATO coordinates :</strong> {{ ad.helipad.tloF_coordinates|default:"NIL" }}</p>
+          <p><strong>Geoid undulation :</strong> {{ ad.helipad.geoid_undulation|default:"NIL" }}</p>
+          <p><strong>TLOF / FATO elevation :</strong> {{ ad.helipad.tloF_elevation|default:"NIL" }}</p>
+          <p><strong>Dimensions / surface / strength / marking :</strong>
+            {{ ad.helipad.area_dimensions|default:"NIL" }}
+            {{ ad.helipad.surface|default:"" }}
+            {{ ad.helipad.strength|default:"" }}
+            {{ ad.helipad.marking|default:"" }}
+          </p>
+          <p><strong>True bearings :</strong> {{ ad.helipad.true_bearings|default:"NIL" }}</p>
+          <p><strong>Declared distance :</strong> {{ ad.helipad.declared_distance|default:"NIL" }}</p>
+          <p><strong>APP / FATO lighting :</strong> {{ ad.helipad.app_fato_lighting|default:"NIL" }}</p>
+          <p class="mb-0"><strong>Remarks :</strong> {{ ad.helipad.remarks|default:"NIL" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============ AD 2.17 – 2.19 ============ -->
+<div class="tab-pane fade" id="t-ats">
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.17 – ATS airspace</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'airspaces' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead>
+          <tr><th>Type</th><th>Designation</th><th>Lateral limits</th>
+              <th>Vertical limits</th><th>Class</th><th>Transition alt.</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for s in ad.airspaces.all %}
+          <tr>
+            <td><span class="badge bg-primary">{{ s.kind }}</span></td>
+            <td>{{ s.designation }}</td>
+            <td class="small">{{ s.lateral_limits }}</td>
+            <td class="small">{{ s.vertical_limits_upper }} / {{ s.vertical_limits_lower }}</td>
+            <td>{{ s.airspace_class }}</td>
+            <td>{{ s.transition_altitude }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-danger"
+                 href="{% url 'ad:child_delete' ad.icao_code 'airspaces' s.pk %}">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-3">NIL</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.18 – ATS communication facilities</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'comms' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Service</th><th>Call sign</th><th>Frequency</th><th>Hours</th><th></th></tr></thead>
+      <tbody>
+      {% for c in ad.comms.all %}
+        <tr>
+          <td>{{ c.get_service_display }}</td>
+          <td>{{ c.call_sign }}</td>
+          <td>{{ c.frequency }}</td>
+          <td>{{ c.hours_of_operation }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-danger"
+               href="{% url 'ad:child_delete' ad.icao_code 'comms' c.pk %}">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-3">NIL</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.19 – Radio navigation and landing aids</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'navaids' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Type</th><th>ID</th><th>Frequency</th><th>Position</th><th>ELEV (m)</th><th></th></tr></thead>
+      <tbody>
+      {% for n in ad.navaids.all %}
+        <tr>
+          <td>{{ n.get_aid_type_display }}</td>
+          <td>{{ n.designator }}</td>
+          <td>{{ n.frequency }}</td>
+          <td class="small">{{ n.coordinates_dms }}</td>
+          <td>{{ n.elevation_m }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-danger"
+               href="{% url 'ad:child_delete' ad.icao_code 'navaids' n.pk %}">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-3">NIL</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ AD 2.20 – 2.24 ============ -->
+<div class="tab-pane fade" id="t-txt">
+  <div class="row g-3">
+    {% for t in ad.text_sections.all %}
+      <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header aip-card-header d-flex justify-content-between">
+            <span>{{ t.get_section_display }}</span>
+            <a class="btn btn-sm btn-light"
+               href="{% url 'ad:child_update' ad.icao_code 'texts' t.pk %}">
+              <i class="bi bi-pencil"></i>
+            </a>
+          </div>
+          <div class="card-body small">{{ t.content|linebreaksbr }}</div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-info">No AD 2.20–2.23 text section yet.
+          <a href="{% url 'ad:child_create' ad.icao_code 'texts' %}">Create one</a>.
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="card shadow-sm border-0 mt-3">
+    <div class="card-header aip-card-header d-flex justify-content-between">
+      <span>AD 2.24 – Charts related to an aerodrome</span>
+      <a class="btn btn-sm btn-light"
+         href="{% url 'ad:child_create' ad.icao_code 'charts' %}">
+        <i class="bi bi-plus-lg"></i> Add
+      </a>
+    </div>
+    <ul class="list-group list-group-flush small">
+      {% for c in ad.charts.all %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>
+            <span class="badge bg-primary me-2">{{ c.chart_type }}</span>
+            {{ c.reference }} – {{ c.title }}
+          </span>
+          {% if c.file %}
+            <a href="{{ c.file.url }}" target="_blank">
+              <i class="bi bi-file-earmark-pdf"></i>
+            </a>
+          {% endif %}
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">NIL</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+</div><!-- /tab-content -->
+{% endblock %}

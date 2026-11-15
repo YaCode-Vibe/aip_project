@@ -1,0 +1,111 @@
+{% extends "ad/base.html" %}
+{% block title %}{% if object %}Modifier{% else %}Nouveau{% endif %} cycle AIRAC{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-header aip-card-header">
+        <i class="bi bi-calendar-event me-2"></i>
+        {% if object %}Modifier le cycle {{ object.code }}{% else %}Créer un cycle AIRAC{% endif %}
+      </div>
+      <div class="card-body">
+
+        {% if not object %}
+        <div class="alert alert-info small mb-3">
+          Le cycle sera créé en mode <strong>Brouillon</strong>. Il deviendra
+          actif après publication depuis
+          <a href="{% url 'ad:airac_dashboard' %}">/airac/</a>.
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {# --- Sélecteur de cycle prédéfini (aide à la saisie) --- #}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ form.preset.id_for_label }}">
+              <i class="bi bi-calendar3 me-1"></i>{{ form.preset.label }}
+            </label>
+            {{ form.preset }}
+            <div class="form-text small">{{ form.preset.help_text }}</div>
+            {% for e in form.preset.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <hr class="my-3">
+
+          {# --- Code du cycle : 100 % libre --- #}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ form.code.id_for_label }}">
+              Numéro du cycle <span class="text-danger">*</span>
+            </label>
+            {{ form.code }}
+
+            {% for e in form.code.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          {# --- Dates --- #}
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="{{ form.publication_date.id_for_label }}">
+                Date de publication
+              </label>
+              {{ form.publication_date }}
+              {% for e in form.publication_date.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="{{ form.effective_date.id_for_label }}">
+                Date d'entrée en vigueur
+              </label>
+              {{ form.effective_date }}
+              {% for e in form.effective_date.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+
+          {% for e in form.non_field_errors %}
+            <div class="alert alert-danger small">{{ e }}</div>
+          {% endfor %}
+
+          <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary">
+              <i class="bi bi-check2 me-1"></i>Enregistrer
+            </button>
+            <a href="{% url 'ad:airac_dashboard' %}" class="btn btn-outline-secondary">
+              Annuler
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ airac_calendar_json|json_script:"airac-calendar-data" }}
+<script>
+(function () {
+  const DATA = JSON.parse(document.getElementById('airac-calendar-data').textContent || '{}');
+  const presetSel = document.getElementById('id_preset');
+  const pubInp    = document.getElementById('id_publication_date');
+  const effInp    = document.getElementById('id_effective_date');
+  if (!presetSel) return;
+
+  presetSel.addEventListener('change', function () {
+    const v = this.value;
+    if (!v || !DATA[v]) return;
+    const [pub, eff] = DATA[v];
+
+    // ✅ On remplit UNIQUEMENT les deux dates.
+    // ❌ Le champ `code` n'est JAMAIS touché.
+    pubInp.value = pub;
+    effInp.value = eff;
+
+    [pubInp, effInp].forEach(el => {
+      el.classList.add('is-valid');
+      setTimeout(() => el.classList.remove('is-valid'), 900);
+    });
+  });
+})();
+</script>
+{% endblock %}
+
+

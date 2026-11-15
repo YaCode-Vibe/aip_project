@@ -1,0 +1,154 @@
+{% extends "ad/base.html" %}
+{% block title %}Gestion AIRAC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-0 text-primary-emphasis">
+      <i class="bi bi-calendar-event me-2"></i>Gestion des cycles AIRAC
+    </h1>
+    <p class="text-muted mb-0">Publication conforme OACI (Annexe 15 / Doc 8126)</p>
+  </div>
+  <div class="d-flex gap-2">
+    {% if draft %}
+      <a href="{% url 'ad:airac_publish' %}" class="btn btn-primary">
+        <i class="bi bi-upload me-1"></i>Publier {{ draft.code }}
+      </a>
+    {% else %}
+      <a href="{% url 'ad:airac_cycle_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Nouveau cycle
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Cartes de statut -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header aip-card-header">Cycle actif (N)</div>
+      <div class="card-body">
+        {% if active %}
+          <h3 class="mb-1">{{ active.code }}</h3>
+          <p class="mb-0 small text-muted">
+            Publié le {{ active.publication_date|date:"d M Y" }}<br>
+            En vigueur le {{ active.effective_date|date:"d M Y" }}
+          </p>
+        {% else %}
+          <p class="text-muted mb-0">Aucun cycle publié</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header aip-card-header">Cycle brouillon</div>
+      <div class="card-body">
+        {% if draft %}
+          <h3 class="mb-1">{{ draft.code }}
+            <span class="badge bg-warning text-dark">DRAFT</span></h3>
+          <p class="mb-2 small text-muted">
+            Publication prévue : {{ draft.publication_date|date:"d M Y" }}<br>
+            Effet : {{ draft.effective_date|date:"d M Y" }}
+          </p>
+          <a href="{% url 'ad:airac_cycle_edit' draft.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>Modifier
+          </a>
+        {% else %}
+          <p class="text-muted mb-2">Aucun brouillon en cours</p>
+          <a href="{% url 'ad:airac_cycle_create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Créer
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header aip-card-header">Modifications en attente</div>
+      <div class="card-body">
+        <h3 class="mb-1">
+          {{ changes|length }}<span class="fs-6 text-muted"> / {{ total_aerodromes }}</span>
+        </h3>
+        <p class="mb-0 small text-muted">aérodrome(s) à publier</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Liste des changements -->
+{% if changes %}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header aip-card-header">
+    <i class="bi bi-list-check me-2"></i>Contenu à publier
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 aip-table">
+      <thead>
+        <tr><th>ICAO</th><th>Aérodrome</th><th>Sections</th><th class="text-end">Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for c in changes %}
+        <tr>
+          <td><span class="badge bg-primary">{{ c.aerodrome.icao_code }}</span></td>
+          <td class="fw-semibold">{{ c.aerodrome.name }}</td>
+          <td>
+            {% if c.is_new %}
+              <span class="badge bg-success">Nouvelle publication</span>
+            {% else %}
+              {% for section in c.changed_sections %}
+                <span class="badge bg-light text-dark border">{{ section }}</span>
+              {% endfor %}
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{% url 'ad:aerodrome_pdf' c.aerodrome.icao_code %}"
+               target="_blank" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-file-earmark-pdf"></i> Aperçu diff
+            </a>
+            <a href="{% url 'ad:aerodrome_detail' c.aerodrome.icao_code %}"
+               class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info mb-4">
+  <i class="bi bi-info-circle me-2"></i>
+  Aucune modification détectée depuis la dernière publication.
+</div>
+{% endif %}
+
+<!-- Historique -->
+<div class="card shadow-sm border-0">
+  <div class="card-header aip-card-header">
+    <i class="bi bi-clock-history me-2"></i>Historique des cycles
+  </div>
+  <table class="table table-sm mb-0 aip-table">
+    <thead>
+      <tr><th>Code</th><th>Publication</th><th>Effet</th><th>Statut</th></tr>
+    </thead>
+    <tbody>
+      {% for cycle in cycles %}
+      <tr>
+        <td class="fw-semibold">{{ cycle.code }}</td>
+        <td>{{ cycle.publication_date|date:"d M Y"|default:"—" }}</td>
+        <td>{{ cycle.effective_date|date:"d M Y"|default:"—" }}</td>
+        <td>
+          {% if cycle.is_draft %}<span class="badge bg-warning text-dark">DRAFT</span>
+          {% elif cycle.is_active %}<span class="badge bg-success">ACTIF</span>
+          {% else %}<span class="badge bg-secondary">ARCHIVÉ</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-muted text-center py-3">Aucun cycle</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

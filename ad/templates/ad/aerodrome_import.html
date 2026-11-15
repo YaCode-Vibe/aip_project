@@ -1,0 +1,76 @@
+{% extends "ad/base.html" %}
+{% block title %}Importer un aérodrome – AIP Algérie{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+
+    <div class="card shadow-sm border-0 mb-3">
+      <div class="card-header aip-card-header">
+        <i class="bi bi-upload me-2"></i>Importer un aérodrome (JSON)
+      </div>
+      <div class="card-body">
+
+        <div class="alert alert-info small mb-4">
+          <strong><i class="bi bi-info-circle me-1"></i>Format attendu</strong> :
+          un <strong>objet</strong> (1 aérodrome) ou un <strong>tableau</strong>
+          d'objets (import en masse). Structure identique à celle de
+          <code>aip_algeria.py</code>.
+          L'import est <strong>idempotent</strong> : s'il existe déjà, l'aérodrome
+          est mis à jour ; sinon il est créé.
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-file-earmark-code me-1"></i>Fichier JSON
+            </label>
+            {{ form.json_file }}
+            {% if form.json_file.errors %}<div class="text-danger small">{{ form.json_file.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-code-square me-1"></i>Ou collez le JSON
+            </label>
+            {{ form.json_data }}
+            {% if form.json_data.errors %}<div class="text-danger small">{{ form.json_data.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-primary">
+              <i class="bi bi-check2-circle me-1"></i>Importer / mettre à jour
+            </button>
+            <a class="btn btn-outline-secondary" href="{% url 'ad:aerodrome_list' %}">
+              Annuler
+            </a>
+            <a class="btn btn-outline-info ms-auto" href="{% url 'ad:export_all' %}">
+              <i class="bi bi-download me-1"></i>Télécharger tous les aérodromes (modèle)
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header aip-card-header">
+        <i class="bi bi-lightbulb me-2"></i>Comment procéder ?
+      </div>
+      <div class="card-body small">
+        <ol class="mb-0">
+          <li>Téléchargez un aérodrome existant via le bouton
+              <em>⬇️ Exporter JSON</em> sur sa fiche.</li>
+          <li>Modifiez le fichier dans votre éditeur (ajoutez <code>runways</code>,
+              <code>obstacles</code>, <code>aprons</code>, <code>taxiways</code>,
+              <code>navaids</code>…).</li>
+          <li>Renvoyez-le via le formulaire ci-dessus : il est mis à jour en BDD.</li>
+        </ol>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

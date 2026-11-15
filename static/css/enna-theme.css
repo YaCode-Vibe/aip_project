@@ -1,0 +1,377 @@
+/* =========================================================
+   ENNA – SIA Algérie · Thème institutionnel
+   Couleur principale extraite du logo : #1B5A9C
+   ========================================================= */
+:root {
+  /* Bleus corporate */
+  --enna-blue-900: #0A2647;
+  --enna-blue-800: #0E3A6B;
+  --enna-blue-700: #154C87;
+  --enna-blue-600: #1B5A9C;   /* Couleur du logo */
+  --enna-blue-500: #2470BC;
+  --enna-blue-100: #E8F0F9;
+  --enna-blue-50:  #F5F8FC;
+
+  /* Accents institutionnels */
+  --enna-gold:     #C9A227;
+  --enna-red:      #B22234;
+  --enna-green:    #1F7A3D;
+  --enna-gray-50:  #F4F6F9;
+  --enna-gray-100: #E2E6ED;
+  --enna-gray-500: #6C757D;
+
+  /* Typographie */
+  --font-main: "Open Sans", "Segoe UI", system-ui, sans-serif;
+  --font-head: "Roboto", "Segoe UI", system-ui, sans-serif;
+}
+
+/* ---------------------------------------------------------
+   Base
+   --------------------------------------------------------- */
+body {
+  background: var(--enna-gray-50);
+  font-family: var(--font-main);
+  color: #1c2533;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-head);
+  color: var(--enna-blue-900);
+}
+
+a { color: var(--enna-blue-600); }
+a:hover { color: var(--enna-blue-800); }
+
+/* ---------------------------------------------------------
+   Topbar (République)
+   --------------------------------------------------------- */
+.enna-topbar {
+  background: var(--enna-blue-900);
+  color: #fff;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  padding: 5px 0;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.enna-topbar-links a {
+  color: #fff;
+  text-decoration: none;
+  padding: 0 6px;
+  font-weight: 600;
+}
+.enna-topbar-links a:hover { color: var(--enna-gold); }
+.enna-topbar-links .sep { opacity: 0.4; }
+
+/* ---------------------------------------------------------
+   Header (logo + identité)
+   --------------------------------------------------------- */
+.enna-header {
+  background: #fff;
+  border-bottom: 3px solid var(--enna-blue-600);
+  padding: 12px 0;
+}
+.enna-logo-link { display: inline-block; }
+.enna-logo {
+  height: 72px;
+  width: auto;
+  display: block;
+}
+
+.enna-titles { line-height: 1.2; }
+.enna-title-1 {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--enna-gray-500);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.enna-title-2 {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--enna-blue-900);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.enna-title-3 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--enna-blue-600);
+  letter-spacing: 0.04em;
+}
+
+.enna-subtitle {
+  font-family: var(--font-head);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--enna-blue-800);
+}
+.enna-subtitle-small {
+  font-size: 0.78rem;
+  color: var(--enna-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------------------------------------------------------
+   Navbar principale
+   --------------------------------------------------------- */
+.enna-navbar {
+  background: linear-gradient(90deg, var(--enna-blue-800), var(--enna-blue-600));
+  padding: 0.35rem 0;
+}
+.enna-navbar .nav-link {
+  color: rgba(255,255,255,0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.55rem 0.9rem;
+  border-radius: 4px;
+  transition: background 0.15s;
+  text-transform: uppercase;
+}
+.enna-navbar .nav-link:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+.navbar-toggler {
+  border-color: rgba(255,255,255,0.4);
+}
+.navbar-toggler-icon {
+  filter: invert(1);
+}
+
+/* ---------------------------------------------------------
+   Boutons institutionnels
+   --------------------------------------------------------- */
+.btn-enna {
+  background: var(--enna-blue-600);
+  color: #fff;
+  border: 1px solid var(--enna-blue-600);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+}
+.btn-enna:hover {
+  background: var(--enna-blue-800);
+  border-color: var(--enna-blue-800);
+  color: #fff;
+}
+
+.btn-enna-outline {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.6);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+}
+.btn-enna-outline:hover {
+  background: #fff;
+  color: var(--enna-blue-800);
+  border-color: #fff;
+}
+
+/* Boutons dans les pages (fond blanc) */
+.btn-primary {
+  background: var(--enna-blue-600);
+  border-color: var(--enna-blue-600);
+  font-weight: 600;
+  border-radius: 4px;
+}
+.btn-primary:hover {
+  background: var(--enna-blue-800);
+  border-color: var(--enna-blue-800);
+}
+.btn-outline-primary {
+  color: var(--enna-blue-600);
+  border-color: var(--enna-blue-600);
+  border-radius: 4px;
+  font-weight: 600;
+}
+.btn-outline-primary:hover {
+  background: var(--enna-blue-600);
+  color: #fff;
+}
+.btn-outline-info {
+  color: var(--enna-blue-600);
+  border-color: var(--enna-blue-500);
+  border-radius: 4px;
+  font-weight: 600;
+}
+.btn-outline-danger {
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------
+   Cards & sections
+   --------------------------------------------------------- */
+.card {
+  border-radius: 6px;
+  border: 1px solid var(--enna-gray-100);
+  overflow: hidden;
+}
+.card-header.aip-card-header {
+  background: linear-gradient(90deg, var(--enna-blue-800), var(--enna-blue-600));
+  color: #fff;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 0 !important;
+  padding: 0.6rem 1rem;
+}
+.card-header.aip-card-header .btn-light {
+  color: var(--enna-blue-800);
+  font-weight: 600;
+}
+
+/* Onglets */
+.aip-tabs .nav-link {
+  color: var(--enna-blue-700);
+  font-family: var(--font-head);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.aip-tabs .nav-link:hover {
+  background: var(--enna-blue-100);
+}
+.aip-tabs .nav-link.active {
+  background: var(--enna-blue-600);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------
+   Tables AIP
+   --------------------------------------------------------- */
+.aip-table thead th {
+  background: var(--enna-blue-100);
+  color: var(--enna-blue-800);
+  font-family: var(--font-head);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--enna-blue-600);
+  padding: 0.6rem 0.75rem;
+}
+.aip-table tbody tr:hover {
+  background: var(--enna-blue-50);
+}
+.aip-table td {
+  font-size: 0.85rem;
+  vertical-align: middle;
+  padding: 0.55rem 0.75rem;
+}
+.badge.bg-primary {
+  background: var(--enna-blue-600) !important;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ---------------------------------------------------------
+   Formulaires
+   --------------------------------------------------------- */
+.form-label {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--enna-blue-900);
+}
+.form-control, .form-select {
+  border-radius: 4px;
+  border-color: var(--enna-gray-100);
+  font-size: 0.88rem;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--enna-blue-500);
+  box-shadow: 0 0 0 0.2rem rgba(27, 90, 156, 0.15);
+}
+
+/* ---------------------------------------------------------
+   Barre de complétude
+   --------------------------------------------------------- */
+.progress {
+  background: var(--enna-gray-100);
+  border-radius: 3px;
+}
+.progress-bar.bg-primary {
+  background: linear-gradient(90deg, var(--enna-blue-800), var(--enna-blue-500)) !important;
+}
+
+/* ---------------------------------------------------------
+   Alertes
+   --------------------------------------------------------- */
+.enna-alert {
+  border-radius: 4px;
+  border-left: 4px solid var(--enna-blue-600);
+}
+
+/* ---------------------------------------------------------
+   Footer
+   --------------------------------------------------------- */
+.enna-footer {
+  background: var(--enna-blue-900);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.82rem;
+}
+.enna-footer-title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+.enna-footer a {
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+}
+.enna-footer a:hover { color: var(--enna-gold); }
+.enna-footer-hr {
+  border-color: rgba(255,255,255,0.15);
+  margin: 1rem 0;
+}
+/* ---------------------------------------------------------
+   Wrapper scrollable : titre + recherche + tableau défilent
+   ensemble dans la même zone
+   --------------------------------------------------------- */
+.aip-scroll-wrapper {
+  max-height: calc(110vh - 320px);   /* hauteur visible sous le header */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;                /* évite que la scrollbar masque les badges */
+}
+
+/* Scrollbar discrète (Chrome/Edge/Safari) */
+.aip-scroll-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+.aip-scroll-wrapper::-webkit-scrollbar-track {
+  background: var(--enna-gray-50);
+}
+.aip-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: var(--enna-blue-500);
+  border-radius: 4px;
+}
+.aip-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--enna-blue-700);
+}
+
+/* Firefox */
+.aip-scroll-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: var(--enna-blue-500) var(--enna-gray-50);
+}
